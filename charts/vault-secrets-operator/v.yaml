@@ -1,0 +1,52 @@
+USER-SUPPLIED VALUES:
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: connatix.com/launch-spec
+          operator: In
+          values:
+          - linux-karpenter
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - arm64
+          # - amd64
+image:
+  repository: docker.ops.connatix.com/library/connatix-infra-ci-enrolment
+  tag: vso-1
+podAnnotations:
+  ad.datadoghq.com/vault-secrets-operator.logs: |
+    [{
+     "source": "vault-secrets-operator",
+     "service": "vault-secrets-operator",
+     "log_processing_rules": [{
+     "type": "include_at_match",
+     "name": "ingest_error_logs_from_vso",
+     "pattern": ".*error.*"
+     }]
+     }]
+podLabels:
+  Environment: Production
+  Product: Security
+  Project: Vault
+  Team: Infra
+  URL: terraform-modules-ricoberger-vault-secrets-operator
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::193993131346:role/vault-secrets-operator-staging-sandbox-us-east-2
+vault:
+  address: https://vault-multi-region.ops.connatix.com
+  authMethod: aws
+  awsAuthType: iam
+  awsPath: auth/staging-sandbox-us-east-2
+  awsRole: staging-sandbox-us-east-2
+  reconciliationTime: 60
